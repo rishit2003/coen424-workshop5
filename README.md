@@ -2,8 +2,6 @@
 
 This tutorial will guide you on deploying any web application to Google Cloud Run as a microservice.
 
-
-
 ## 1. Reading Recommendations
 
 Before you dive into the coding, you may study the following materials.
@@ -20,11 +18,9 @@ Before you dive into the coding, you may study the following materials.
 
 - [YouTube: Docker in 100 Seconds](https://www.youtube.com/watch?v=Gjnup-PuquQ), and Dockerfile
 
+## 2. Preliminary Setups for Workshop
 
-
-
-
-## 2. Preliminary Setup for Workshop
+### 2.1 GCP Setup
 
 1. Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install, run init.
 
@@ -83,7 +79,7 @@ Before you dive into the coding, you may study the following materials.
    ACTIVE  ACCOUNT
            bbbb@concordia.ca
    *       xxxxx@gmail.com
-   
+
    To set the active account, run:
        $ gcloud config set account `ACCOUNT`
    ```
@@ -118,6 +114,16 @@ Before you dive into the coding, you may study the following materials.
 
 
 
+### 2.2 GitHub Repo Setup
+
+1. Fork this repo with all branches. 
+
+   ![image-20251022123947744 PM](./image//image-20251022123947744 PM.png)
+
+2. 
+
+
+
 
 
 ## 3. Use Case: Websites and Web Applications
@@ -131,8 +137,6 @@ There are three approaches to deploying your project as a service to Cloud Run:
 > **<u>The following user scenario is presented</u>**:
 >
 > You are now working on deploying two web applications (one Python and one Java) to Google Cloud Run using the last two approaches.
-
-
 
 ### 3.1 Approach 1: Deploy from a Git Repository
 
@@ -231,8 +235,6 @@ Please work on the following steps:
 
    ![alt text](image/image-s6.png)
 
-
-
 ### 3.2 Approach 2: Deploy from Local Source Code using Google Cloud CLI
 
 Sometimes, you may want to deploy your local work to the cloud for debugging.
@@ -272,7 +274,7 @@ public class HelloController {
 
 Please work on the following steps:
 
-0. [Make sure that you have the following role or roles on the project  (step 3)](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-java-service#before-you-begin)
+0. [Make sure that you have the following role or roles on the project (step 3)](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-java-service#before-you-begin)
 
    1. Go to the **IAM** page.
    2. Click person_add **Grant access**.
@@ -312,8 +314,6 @@ Please work on the following steps:
 
 To continually deploy your local changes, you can re-run the `gcloud run deploy` and use the same service name.
 
-
-
 ### 3.3 Approach 3: GitHub Action Workflow
 
 The following materials are involved:
@@ -332,7 +332,7 @@ The following materials are involved:
 
    ![image-20250212104811706 AM](./image//image-20250212104811706 AM.png)
 
-3. Create your service account key and save the 
+3. Create your service account key and save the
 
    ![image-20250212105944244 AM](./image//image-20250212105944244 AM.png)
 
@@ -340,13 +340,11 @@ The following materials are involved:
 
    ![image-20251022122954926 PM](./image//image-20251022122954926 PM.png)
 
-
-
 #### Step 2: Develop the workflow file
 
 Under the repo root folder, create the following yaml file named `.github/workflows/gcloud.yml`
 
-``` yaml
+```yaml
 name: build site
 
 # any push event will automatically trigger this workflow and run the `gcloud run deploy`
@@ -378,5 +376,4 @@ jobs:
         run: |
           cd web_app_python
           gcloud run deploy cloud-run-tut-ga-demo --source . --allow-unauthenticated -q --region us-east1
-
 ```
