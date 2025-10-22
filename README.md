@@ -120,7 +120,11 @@ Before you dive into the coding, you may study the following materials.
 
    ![image-20251022123947744 PM](./image//image-20251022123947744 PM.png)
 
-2. 
+2. In your local terminal, go to your work directory and run the following to clone the repo to your local.
+
+   ``` bash
+   git clone https://github.com/<your github account>/cloud_run_tut.git
+   ```
 
 
 
