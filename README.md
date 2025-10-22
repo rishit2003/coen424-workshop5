@@ -1,57 +1,40 @@
-#### <COEN6313: Programming On Cloud> TUT: Google Cloud Run
+# COEN424/6313 TUT: Google Cloud Run
 
-This tutorial will go through three demo projects for two use cases:
+This tutorial will guide you on deploying any web application to Google Cloud Run as a microservice.
 
-1. [Websites and web applications](https://cloud.google.com/run/#websites-and-web-applications);
-2. [Streaming data processing](https://cloud.google.com/run/?hl=en#streaming-data-processing);
 
-using **Google Cloud Run**, **Cloud Storage**, **Eventarc (pronunciation: event arch)**, and **BigQuery** services of the Google Cloud Platform.
 
-# 1. Readings
+## 1. Reading Recommendations
 
-Before you dive into the coding, you should study the following materials.
+Before you dive into the coding, you may study the following materials.
 
-There is no need to operate on the Cloud Run; understand the concepts and know what you will do.
+- How to use Git and Github: [YouTube: Git Tutorial](https://www.youtube.com/watch?v=8JJ101D3knE&t=3s), [YouTube: GitHub Tutorial](https://www.youtube.com/watch?v=tRZGeaHPoaw).
 
-- How to use Git and Github: [Youtube: Git Tutorial](https://www.youtube.com/watch?v=8JJ101D3knE&t=3s), [Youtube: GitHub Tutorial](https://www.youtube.com/watch?v=tRZGeaHPoaw).
+- [What is Cloud Run](https://cloud.google.com/run/docs/overview/what-is-cloud-run)? You should understand the concepts of "Cloud Run Services" and "Cloud Run Jobs."
 
-## 1.1 Case 1: Cloud Run Basic
+- [Is my app a good fit for Cloud Run?](https://cloud.google.com/run/docs/fit-for-run) You should know what kind of work suits Google Cloud Run.
 
-- Overall:
+- [Quickstart: Deploy to Cloud Run from a Git Repository](https://cloud.google.com/run/docs/quickstarts/deploy-continuously#cloudrun_deploy_continuous_code-python)
 
-  - [What is Cloud Run](https://cloud.google.com/run/docs/overview/what-is-cloud-run)? You should understand the concepts of "Cloud Run Services" and "Cloud Run Jobs."
+- [Deploy a Python Service to Cloud Run from Source Code](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-python-service)
 
-  - [Is my app a good fit for Cloud Run?](https://cloud.google.com/run/docs/fit-for-run) You should know what kind of work suits Google Cloud Run.
+- [YouTube: Docker in 100 Seconds](https://www.youtube.com/watch?v=Gjnup-PuquQ), and Dockerfile
 
-- For Use Case 1:
 
-  - [Quickstart: Deploy to Cloud Run from a Git Repository](https://cloud.google.com/run/docs/quickstarts/deploy-continuously#cloudrun_deploy_continuous_code-python)
 
-  - [Deploy a Python Service to Cloud Run from Source Code](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-python-service)
 
-## 1.2 Case 2: Cloud Run + Cloud Storage
 
-- For Use Case 2:
-  - [Use Eventarc to receive events from Cloud Storage](https://cloud.google.com/run/docs/tutorials/eventarc)
-- Cloud Storage:
-  - [Discover object storage with the Google Cloud console](https://cloud.google.com/storage/docs/discover-object-storage-console)
-  - [About Cloud Storage buckets](https://cloud.google.com/storage/docs/buckets)
-- Eventarc:
-  - [Eventarc overview](https://cloud.google.com/eventarc/docs/overview)
-- BigQuery:
-  - [What is BigQuery](https://cloud.google.com/bigquery/docs/introduction)
+## 2. Preliminary Setup for Workshop
 
-# 2. Preliminary Setup
+1. Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install, run init.
 
-1. Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install, run init, and select the project you just created.
-
-   Verify if the tools by the command:
+   Verify if the tools are available by the command:
 
    ```bash
    gcloud -v
    ```
 
-   and you should get the following output:
+   And you should get the following output:
 
    ```bash
    Google Cloud SDK 444.0.0
@@ -65,7 +48,7 @@ There is no need to operate on the Cloud Run; understand the concepts and know w
 
    ![image-20230905141247768](image/image-a1.png)
 
-3. **<<IMPORTANT>>**: **Set up a billing account for your project**.
+3. **IMPORTANT**: **Set up a billing account for your project**.
 
    ![image-20230905140713980](image/image-a2.png)
 
@@ -79,7 +62,7 @@ There is no need to operate on the Cloud Run; understand the concepts and know w
    gcloud auth login
    ```
 
-   then it will pull up your browser:
+   Then it will pull up your browser:
 
    ![image-20230905151121667](image/image-a3.png)
 
@@ -93,19 +76,19 @@ There is no need to operate on the Cloud Run; understand the concepts and know w
    gcloud auth list
    ```
 
-   You should be able to see the following messgae:
+   You should be able to see the following message:
 
    ```bash
        Credentialed Accounts
    ACTIVE  ACCOUNT
            bbbb@concordia.ca
    *       xxxxx@gmail.com
-
+   
    To set the active account, run:
        $ gcloud config set account `ACCOUNT`
    ```
 
-5. Config the project to your gcloud:
+5. Configure the project for your gcloud:
 
    ```bash
    gcloud config set project <your-project-id>
@@ -115,11 +98,11 @@ There is no need to operate on the Cloud Run; understand the concepts and know w
 
    ![image/image-a5.png](image/image-a5.png)
 
-6. Set up Billing information and add a payment to your account (this will charge you refundable 1\$~2\$):
+6. Set up Billing information and add a payment to your account (this will charge you a refundable 1\$~2\$):
 
    <img width="299" alt="image" src="https://github.com/youyinnn/cloud_run_tut/assets/23525754/e42e2861-8db4-44ec-be21-86dcae38c0a3">
 
-7. Then, use the `gcloud` in your machine to enable the following **six** Google Cloud APIs (Updated):
+7. Then, use the `gcloud` on your machine to enable the following **six** Google Cloud APIs (Updated):
 
    ```bash
    gcloud services enable run.googleapis.com eventarc.googleapis.com storage.googleapis.com cloudbuild.googleapis.com iam.googleapis.com iamcredentials.googleapis.com
@@ -131,25 +114,31 @@ There is no need to operate on the Cloud Run; understand the concepts and know w
    Operation "operations/acf.xxxxxxxxx" finished successfully.
    ```
 
-8. (Optional) Install docker in your local to debug with your Dockerfile.
+8. (Optional) Install Docker in your local environment to debug with your Dockerfile.
 
-# 3. Use Case 1: Websites and web applications
 
-There are three approaches to deploying your project as services to Cloud Run:
 
-1. from a published docker image;
+
+
+## 3. Use Case: Websites and Web Applications
+
+There are three approaches to deploying your project as a service to Cloud Run:
+
+1. From a published Docker image;
 2. <u>from a GitHub repository;</u>
 3. <u>from a local source code;</u>
 
 > **<u>The following user scenario is presented</u>**:
 >
-> You now work on deploying two web applications (one Python and one Java) to the Google **<u>_Cloud Run_</u>** through the last two approaches.
+> You are now working on deploying two web applications (one Python and one Java) to Google Cloud Run using the last two approaches.
 
-## 3.1 Approach 1: Deploy from a Git Repository
 
-Deploying projects on GitHub to Cloud Run can enable the CI/CD workflow between Google Cloud Platform and GitHub.
 
-In the `web_app_python` of this repository, a simple Flash application in the `main.py` and the `Dockerfile` is for Cloud Run Service to build and deploy the image.
+### 3.1 Approach 1: Deploy from a Git Repository
+
+Deploying projects on GitHub to Cloud Run can enable the CI/CD workflow between the Google Cloud Platform and GitHub.
+
+In the `web_app_python` of this repository, a simple Flash application is included in main.py, and the Dockerfile is used to build and deploy the image for Cloud Run Service.
 
 The `Dockerfile`:
 
@@ -190,7 +179,7 @@ def hello_world():
 
 Please work on the following steps:
 
-1. Clone this repository ([Youtube: Git Tutorial](https://www.youtube.com/watch?v=8JJ101D3knE&t=3s), [Youtube: GitHub Tutorial](https://www.youtube.com/watch?v=tRZGeaHPoaw)).
+1. Clone this repository ([YouTube: Git Tutorial, YouTube: GitHub Tutorial](https://www.youtube.com/watch?v=tRZGeaHPoaw)).
 
 2. Go to Cloud Run and create a Cloud Run Service:
 
@@ -200,15 +189,15 @@ Please work on the following steps:
 
       1. Select "... from a source repository";
 
-      2. Setup Cloud Build;
+      2. Set up Cloud Build.
 
-      3. Select GitHub as the provider;
+      3. Select GitHub as the provider.
 
-      4. Authorize your GitHub account;
+      4. Authorize your GitHub account.
 
-      5. Select the repository you just cloned;
+      5. Select the repository you just cloned.
 
-      6. Install the Google Cloud Build to your repo;
+      6. Install the Google Cloud Build in your repo.
 
       ![alt text](image/image-s1.png)
 
@@ -242,13 +231,15 @@ Please work on the following steps:
 
    ![alt text](image/image-s6.png)
 
-## 3.2 Approach 2: Deploy from Local Source Code using Google Cloud CLI
+
+
+### 3.2 Approach 2: Deploy from Local Source Code using Google Cloud CLI
 
 Sometimes, you may want to deploy your local work to the cloud for debugging.
 
-One simple way is to deploy your code using **Google Cloud CLI**.
+A straightforward way is to deploy your code using **Google Cloud CLI**.
 
-In the root path of this repository, a Java application demo in the folder `web_app_java` contains all necessary Java servlet code and the `web_app_java/Dockerfile`.
+In the root path of this repository, a Java application demo in the folder `web_app_java` contains all the necessary Java servlet code and the `web_app_java/Dockerfile`.
 
 The file builds an image that runs a Java application with Maven.
 
@@ -281,6 +272,16 @@ public class HelloController {
 
 Please work on the following steps:
 
+0. [Make sure that you have the following role or roles on the project  (step 3)](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-java-service#before-you-begin)
+
+   1. Go to the **IAM** page.
+   2. Click person_add **Grant access**.
+   3. In the **New Principals** field, enter your user identifier. This is typically the email address for a Google Account.
+   4. Add the roles: Cloud Run Admin, Cloud Run Source Developer, Logs Viewer.
+   5. Save.
+
+   ![image-20251022120531833 PM](./image//image-20251022120531833 PM.png)
+
 1. Once you have installed the CLI tools, you can now deploy this project with the following:
 
    ```bash
@@ -310,259 +311,3 @@ Please work on the following steps:
    ![alt text](image/image-s9.png)
 
 To continually deploy your local changes, you can re-run the `gcloud run deploy` and use the same service name.
-
-## 3.3 Approach 2 + GitHub Action +`gcloud` CLI
-
-The following materials are involved:
-
-1. https://github.com/google-github-actions/auth
-2. https://github.com/google-github-actions/setup-gcloud
-
-### Step 1: Setup Credentials
-
-Please follow: https://github.com/google-github-actions/auth?tab=readme-ov-file#service-account-key-json
-
-Or:
-
-1. Create a new service account
-
-   ![image-20250212102535148 AM](./image//image-20250212102535148 AM.png)
-
-2. Grant the following roles for the service account by accessing the "IAM & Admin" section of the GCP.
-
-   ![image-20250212104811706 AM](./image//image-20250212104811706 AM.png)
-
-3. Create your service account key
-
-   ![image-20250212105944244 AM](./image//image-20250212105944244 AM.png)
-
-
-
-### Step 2: Develop the workflow file
-
-``` yaml
-name: build site
-
-on: push
-
-jobs:
-  gcloud:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: "read"
-      id-token: "write"
-    steps:
-      - uses: "actions/checkout@v4"
-
-      - name: "GGA-Auth"
-        uses: "google-github-actions/auth@v2"
-        with:
-          project_id: "${{ vars.PROJECT_ID }}"
-          credentials_json: "${{ secrets.GCP_SA_CREDENTIAL_JSON }}"
-
-      - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v2"
-
-      - name: "Info"
-        run: |
-          gcloud info
-
-      - name: "Deploy"
-        run: |
-          cd web_app_python
-          gcloud run deploy cloud-run-tut-ga-demo --source . --allow-unauthenticated -q --region us-east1
-
-```
-
-
-
-### Step 3: Test with ACT before pushing to GitHub to debug the workflow
-
-[ACT](https://github.com/nektos/act) is a powerful tool to develop, debug, and verify your GitHub workflow in your local.
-
-You may put the service account key JSON file under the repo and rename it with postfix `.sa.secret.json`, as it is configured to be ignored by git.
-
-Run ACT to test the workflow with the given secret and variable.
-
-```bash
-act push -W .github/workflows/gcloud.yml -j gcloud -s GCP_SA_CREDENTIAL_JSON="$(cat <YOUR JSON FILE PATH>)" --var PROJECT_ID="cloud-tut-437202"
-```
-
-# 4. Use Case 2: Streaming data processing
-
-To implement the use case, the basic process would be like https://cloud.google.com/eventarc/docs/run/create-trigger-storage-console.
-
-But you need to have your **<u>event receiver</u>** that receives the file upload events and hand it to BigQuery.
-
-In this TUT, <u>**we deploy a web application with Cloud Run as the receiver.**</u>
-
-> **<u>The following user scenario is presented</u>**:
->
-> We upload the IRIS dataset to the **_<u>Cloud Storage</u>_** bucket with the Console.
->
-> We deploy a **<u>_Cloud Run_</u>** Python web app service which listens to the upload event and transfers all data in the IRIS.csv file to the **<u>_BigQuery_</u>** table automatically.
-
-## 4.1 Find Out What the Event Message Looks Like
-
-Before that, you need to know <u>how the event has been received and what you will receive</u>.
-
-The following process shows how to figure out the event.
-
-Use the Python app of case 1 to reveal that by adding the following endpoint `event_looks` to the web app on `main.py` as the **<u>event receiver</u>**.
-
-```python
-@app.route("/event_looks", methods=['POST'])
-def event_looks():
-    print(request.method)
-    payload = json.loads(request.data)
-    print(payload)
-
-    return "Event Received"
-```
-
-1. Deploy it to the Cloud Run as we did in use case 1.
-2. Create a **<u>_Cloud Storage_</u>** bucket named `cloud_run_tut_bucket`:
-
-   <img src="image/image-a13.png" alt="image-a13" style="zoom: 33%;" />
-
-3. Create an Eventarc trigger named `t1`, select the following event type, link it to the `cloud_run_tut_bucket` storage and the `cloud_run_tut` Run service of endpoint `/event_looks` :
-
-   ![image-20230831155312625](image/image-a8.png)
-
-   For the event type, you should select the following option since uploading a file creates a new object to the bucket:
-
-   <img src="image/image-a14.png" alt="image-a14" style="zoom: 50%;" />
-
-   Once the trigger is created, you can find it on the Cloud Run Service page:
-
-   ![image-20230831155926136](image/image-a9.png)
-
-4. Upload one PNG file to the bucket, and then you can get the following message from the LOGS of the service.
-
-   ![image-20230829180753549](image/image-a10.png)
-
-   Now you know what is the incoming request from Eventarc.
-
-## 4.2 Receive Events for Data Transformation
-
-Program the Python application to get the uploaded file and store it in the BigQuery by using the API Client Libraries:
-
-- [BigQuery API Client Libraries](https://cloud.google.com/bigquery/docs/reference/libraries)
-- [Loading CSV data from Cloud Storage](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv)
-- [Cloud Storage Client Libraries](https://cloud.google.com/storage/docs/reference/libraries) (optional)
-
-Before using these libraries in your local environment, you must set up the authentication: https://cloud.google.com/docs/authentication/client-libraries.
-
-> **If the code runs on Google Cloud Run, it is set by default, and no action is needed.**
-
-But if the code runs locally, follow https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev by just:
-
-```bash
-gcloud auth application-default login
-```
-
-There are many ways you could do the data loading:
-
-1. use the Storage Client Libraries to download and upload the file with the BigQuery Client Libraries;
-2. use the BigQuery Client Libraries to create the table directly from a Cloud Storage URL (starts with `gs://`).
-
-In this TUT, we will practice the second option. Please read:
-
-- [Loading data from Cloud Storage](https://cloud.google.com/bigquery/docs/batch-loading-data#permissions-load-data-from-cloud-storage).
-- [Loading CSV data into a table](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table)
-
-Please define the following Flask API endpoint `/event_receive` in the `main.py`.
-
-```python
-from google.cloud import bigquery
-
-@app.route("/event_receive", methods=['POST'])
-def event_receiver():
-    payload = json.loads(request.data)
-
-    file_name = payload['name']
-    bucket_name = payload['bucket']
-
-    # Construct a BigQuery client object.
-    client = bigquery.Client()
-
-    ######################
-    # TODO(developer): Set table_id to the ID of the table to create.
-    # the format of the table id is:
-    # table_id = "your-project.your_dataset.your_table_name"
-    # for example, mine was:
-    # table_id = f"cloud-tut-397400.cloud_run_tut_dataset.iris"
-    table_id = <fill_in_your_table_id_here>
-
-    ######################
-    # BigQuery API for creating a table from a LoadJob
-    # create a load job with defined schema and source_format
-    job_config = bigquery.LoadJobConfig(
-        schema=[
-            bigquery.SchemaField("Id", "INT64"),
-            bigquery.SchemaField("SepalLengthCm", "FLOAT64"),
-            bigquery.SchemaField("SepalWidthCm", "FLOAT64"),
-            bigquery.SchemaField("PetalLengthCm", "FLOAT64"),
-            bigquery.SchemaField("PetalWidthCm", "FLOAT64"),
-            bigquery.SchemaField("Species", "STRING"),
-        ],
-        skip_leading_rows=1,
-        # The source format defaults to CSV, so the line below is optional.
-        source_format=bigquery.SourceFormat.CSV,
-    )
-    # Define where to download the csv file
-    uri = f"gs://{bucket_name}/{file_name}"
-
-    ######################
-    # Make an API request to create the table from csv file that are stored in the storage bucket
-    load_job = client.load_table_from_uri(
-        uri, table_id, job_config=job_config
-    )
-
-    load_job.result()  # Waits for the job to complete.
-
-    ######################
-    # Make an API request to query the table with table_id
-    destination_table = client.get_table(table_id)
-    print("Loaded {} rows.".format(destination_table.num_rows))
-
-    return "Event Received"
-```
-
-Follow these steps to set up the automatic data processing service:
-
-1. Search for "BigQuery" on the Google Cloud console and enable it. Or:
-
-   ```bash
-   gcloud services enable bigquery.googleapis.com
-   ```
-
-2. Create a BigQuery dataset with id `cloud_run_tut_dataset` in BigQuery.
-
-   <img src="image/image-a15.png" alt="image-a15" style="zoom: 50%;" />
-
-3. Please replace the `table_id` inside the endpoint `/event_receive` to your case.
-
-   Note that the `table_id` strictly follows the format `your-project.your_dataset.your_table_name`.
-
-   - The `your-project` is replaced with the project ID, which can be found while selecting Project in the Console. You may also use the project name.
-
-     ![image/image-a5.png](image/image-a5.png)
-
-   - The `your_dataset` is replaced with the dataset name.
-
-   - The `your_table_name` is the only term we could decide. In this case, it is `iris`.
-
-4. Then, create a new Eventarc trigger for the endpoint `/event_receive` on the Cloud Run service's TRIGGER panel. This is simplier that what we did before: ![image-s10](image/image-s10.png)
-
-5. Now, you can upload the `Iris.csv` file in this repository to the bucket.
-
-   <img src="image/image-a16.png" alt="image-a16" style="zoom:33%;" />
-
-   Go to the LOGS of the service. The payload and the number of rows are printed.
-
-   <img src="image/image-a17.png" alt="image-a17" style="zoom: 33%;" />
-
-6. Finally, you can query the iris data from the created table in BigQuery:
-
-   ![image-a11](image/image-a11.png)
