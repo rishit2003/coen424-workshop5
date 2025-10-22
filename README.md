@@ -311,3 +311,72 @@ Please work on the following steps:
    ![alt text](image/image-s9.png)
 
 To continually deploy your local changes, you can re-run the `gcloud run deploy` and use the same service name.
+
+
+
+### 3.3 Approach 3: GitHub Action Workflow
+
+The following materials are involved:
+
+1. https://github.com/google-github-actions/auth
+2. https://github.com/google-github-actions/setup-gcloud
+3. https://github.com/google-github-actions/auth?tab=readme-ov-file#service-account-key-json
+
+#### Step 1: Set up Credentials
+
+1. Go to IAM and create a new service account.
+
+   ![image-20250212102535148 AM](./image//image-20250212102535148 AM.png)
+
+2. Grant the following roles for the created service account by accessing the "IAM & Admin" section of the GCP.
+
+   ![image-20250212104811706 AM](./image//image-20250212104811706 AM.png)
+
+3. Create your service account key and save the 
+
+   ![image-20250212105944244 AM](./image//image-20250212105944244 AM.png)
+
+4. Go to the GitHub repo settings and create an action secret `GCP_SA_CREDENTIAL_JSON` with the downloaded content.
+
+   ![image-20251022122954926 PM](./image//image-20251022122954926 PM.png)
+
+
+
+#### Step 2: Develop the workflow file
+
+Under the repo root folder, create the following yaml file named `.github/workflows/gcloud.yml`
+
+``` yaml
+name: build site
+
+# any push event will automatically trigger this workflow and run the `gcloud run deploy`
+on: push
+
+jobs:
+  gcloud:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "GGA-Auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          project_id: "${{ vars.PROJECT_ID }}"
+          credentials_json: "${{ secrets.GCP_SA_CREDENTIAL_JSON }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
+
+      - name: "Info"
+        run: |
+          gcloud info
+
+      - name: "Deploy"
+        run: |
+          cd web_app_python
+          gcloud run deploy cloud-run-tut-ga-demo --source . --allow-unauthenticated -q --region us-east1
+
+```
